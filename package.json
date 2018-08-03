@@ -1,0 +1,25 @@
+{
+  "name": "koa2-builder",
+  "version": "0.1.0",
+  "description": "It is a koa2 backend generator for koa 2.x",
+  "main": "bin/koa2-builder",
+  "preferGlobal": true,
+  "bin": {
+    "koa2-builder": "bin/koa2-builder"
+  },
+  "scripts": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/skyerh/koa2-builder.git"
+  },
+  "author": "skyerh",
+  "license": "MIT",
+  "homepage": "https://github.com/skyerh/koa2-builder",
+  "dependencies": {
+    "commander": "^2.16.0",
+    "ncp": "^2.0.0"
+  },
+  "engines": {
+    "node": ">= 7.0"
+  }
+}
