@@ -49,50 +49,51 @@ Start node server in production mode
 npm run prd
 ```
 ## Pre-built folders
-**your project dirName**
-├┬ bin  (project start here)
-│├ config
-││├ development.js (config for developer mode)
-││├ index.js (mode selector)
-││├ log.js (config of output log format)
-││├ production.js (config for production mode)
-││└ rbac.js (simple rbac config)
-│├ controllers
-││└ rbac.js (simple rbac config)
-│├ error
-││├ apiError.js (error output defined)
-││└ apiErrorNames.js (error information definition)
-│├ events
-││├ index.js (event exporter)
-││├ server.js (errors event for server)
-││└ socketIo.js (example of socket io event)
-│├ logs
-││├ error (all the error logs go here)
-││└ response (all the received and responded logs go here)
-│├ middlewares
-││├ jwt.js (json web token middleware)
-││├ rbac.js (role base access control middleware)
-││└ response.js (response formatting middleware)
-│├ models
-││├ dbModel.js (database selector)
-││├ rbacModel.js (role base access control model)
-││├ redisInviteModel.js (redis model sample)
-││└ userModel.js (user model sample)
-│├ public
-││├ doc (apis documentation goes here)
-││└ report (mocha test report goes here)
-│├ routes
-││├ index.js (index for routing)
-││└ user.js (user routing sample)
-│├ test
-││└ user.test.js (user module test sample)
-│├ tmp
-│├ utils
-││├ crypto.js (utility for encrypt and decrypt data)
-││├ email.js (utility for sending the email)
-││├ log_util.js (utility for formatting the log)
-││└ validate.js (utility for validate the json schema)
-└└ views
+
+**your project dirName**  
+├┬ bin  (project start here)  
+│├ config  
+││├ development.js (config for developer mode)  
+││├ index.js (mode selector)  
+││├ log.js (config of output log format)  
+││├ production.js (config for production mode)  
+││└ rbac.js (simple rbac config)  
+│├ controllers  
+││└ rbac.js (simple rbac config)  
+│├ error  
+││├ apiError.js (error output defined)  
+││└ apiErrorNames.js (error information definition)  
+│├ events  
+││├ index.js (event exporter)  
+││├ server.js (errors event for server)  
+││└ socketIo.js (example of socket io event)  
+│├ logs  
+││├ error (all the error logs go here)  
+││└ response (all the received and responded logs go here)  
+│├ middlewares  
+││├ jwt.js (json web token middleware)  
+││├ rbac.js (role base access control middleware)  
+││└ response.js (response formatting middleware)  
+│├ models  
+││├ dbModel.js (database selector)  
+││├ rbacModel.js (role base access control model)  
+││├ redisInviteModel.js (redis model sample)  
+││└ userModel.js (user model sample)  
+│├ public  
+││├ doc (apis documentation goes here)  
+││└ report (mocha test report goes here)  
+│├ routes  
+││├ index.js (index for routing)  
+││└ user.js (user routing sample)  
+│├ test  
+││└ user.test.js (user module test sample)  
+│├ tmp  
+│├ utils  
+││├ crypto.js (utility for encrypt and decrypt data)  
+││├ email.js (utility for sending the email)  
+││├ log_util.js (utility for formatting the log)  
+││└ validate.js (utility for validate the json schema)  
+└└ views  
 
 You can be free to adding your own packages or remove unnecessary packages came with koa2-builder.
 
