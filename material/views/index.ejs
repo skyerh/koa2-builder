@@ -1,0 +1,31 @@
+<!DOCTYPE html>  
+ <html>  
+ <head>  
+  <meta charset="utf-8">  
+  <title>koa2-builder example</title>
+  <script src="/socket.io/socket.io.js"></script>
+    <script>
+        var socket = io();
+        socket.emit('client fire up !')
+    </script>
+ </head>  
+ <body>  
+ <h1><%= title %></h1>
+ is running ...
+ <p></p>
+ <div id="msg"></div>
+ <script>
+    // 當觸發連線建立事件
+    // 發送 greet 事件給伺服器
+    socket.on("connect", function () {
+        socket.emit("greet");
+    });
+
+    // 當收到伺服器回傳到 greet 事件
+    // 將內容轉到 div 中呈現
+    socket.on("greeting", function (msg) {
+        document.getElementById("msg").innerText = msg;
+    });
+</script>  
+ </body>  
+ </html>
