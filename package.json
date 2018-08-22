@@ -1,7 +1,7 @@
 {
   "name": "koa2-builder",
   "version": "0.1.0",
-  "description": "It is a koa2 backend generator for koa 2.x",
+  "description": "It is a backend builder for node.js with koa 2.x framework",
   "main": "bin/koa2-builder",
   "preferGlobal": true,
   "bin": {
@@ -12,6 +12,13 @@
     "type": "git",
     "url": "git+https://github.com/skyerh/koa2-builder.git"
   },
+  "keywords": [
+    "koa2",
+    "generator",
+    "builder",
+    "koa2-builder",
+    "koa2-generator"
+  ],
   "author": "skyerh",
   "license": "MIT",
   "homepage": "https://github.com/skyerh/koa2-builder",
