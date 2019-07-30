@@ -1,6 +1,6 @@
 {
   "name": "koa2-builder",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "It is a backend builder for node.js with koa 2.x framework",
   "main": "bin/koa2-builder",
   "preferGlobal": true,
