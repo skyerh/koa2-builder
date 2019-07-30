@@ -21,6 +21,8 @@ All you need to do is adjust the configuration, review the purpose of the folder
  - redis connection
  - bcrypt, aes256 encode and decode
  - json web token validation
+ - bee-queue worker
+ - eslint support
  
 ## Installlation
 
@@ -48,6 +50,14 @@ Start node server in production mode
 ```
 npm run prd
 ```
+Start worker in developer mode
+```
+npm run tester
+```
+Start worker in production mode
+```
+npm run worker
+```
 ## Pre-built folders
 
 **your project dirName**  
@@ -66,7 +76,10 @@ npm run prd
 │├ events  
 ││├ index.js (event exporter)  
 ││├ server.js (errors event for server)  
-││└ socketIo.js (example of socket io event)  
+││└ socketIo.js (example of socket io event)
+│├ jobs  
+││├ dispatcher.js (dispatch the jobs to worker)  
+││└ worker.js (worker running here)  
 │├ logs  
 ││├ error (all the error logs go here)  
 ││└ response (all the received and responded logs go here)  

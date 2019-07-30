@@ -23,6 +23,15 @@ module.exports = {
     redisPort: 6379,
     redisUrl: 'localhost'
   },
+  s3: {
+    accessKeyId: 'your-s3-accessKeyId',
+    ACL: 'private',
+    Bucket: 'your-s3-bucket-dev',
+    CacheControl: 'max-age=31536000, public',
+    ContentType: 'application/octet-stream',
+    ContentDisposition: 'attachment',
+    secretAccessKey: 'your-s3-secretAccessKey',
+  },
   server: {
     env: 'development',
     fileUploadDestination: "uploads/",
@@ -32,5 +41,20 @@ module.exports = {
     protocol: 'http',
     saltRounds: 11,
     secret: 'ItIsTheSecret'
-  }
+  },
+  worker: {
+    arena: {
+      queues: [{
+        name: 'avatarUpload',
+        hostId: 'My Worker',
+        type: 'bee',
+      }],
+      address: {
+        port: '3099',
+        host: '127.0.0.1',
+        basePath: '/arena',
+        disableListen: false,
+      },
+    },
+  },
 }

@@ -2,25 +2,42 @@
  * Module dependencies.
  */
 const
+  Arena = require('bull-arena'),
+  http = require('http'),
   app = require('../app.js'),
   config = require('../config'),
-  http = require('http'),
   setEvents = require('../events')
+
+/**
+ * Normalize a port into a number, string, or false.
+ */
+const normalizePort = (val) => {
+  const nPort = parseInt(val, 10)
+
+  if (Number.isNaN(nPort)) {
+    return val
+  }
+  if (nPort >= 0) {
+    return nPort
+  }
+  return false
+}
 
 /**
  * Get port from environment and store in Express.
  */
-let port = normalizePort(config.server.port || '3000')
+const port = normalizePort(config.server.port || '3000')
 
 /**
  * Create HTTP server.
  */
-let server = http.createServer(app.callback())
+const server = http.createServer(app.callback())
 
 /**
  * setup Socket.IO
  */
-let io = require('socket.io')(server)
+const io = require('socket.io')(server)
+
 setEvents.socketIoEvent(io)
 
 /**
@@ -29,21 +46,10 @@ setEvents.socketIoEvent(io)
 server.listen(port, '0.0.0.0')
 setEvents.serverEvent(server, port)
 
-/**
- * Normalize a port into a number, string, or false.
- */
-function normalizePort(val) {
-  var port = parseInt(val, 10)
-
-  if (isNaN(port)) {
-    // named pipe
-    return val
-  }
-
-  if (port >= 0) {
-    // port number
-    return port
-  }
-
-  return false
+try {
+  Arena({
+    queues: config.worker.arena.queues,
+  }, config.worker.arena.address)
+} catch (err) {
+  console.log('Arena is already running...')
 }
