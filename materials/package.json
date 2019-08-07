@@ -26,6 +26,7 @@
     "bull-arena": "^2.6.3",
     "crypto-random-string": "^1.0.0",
     "ejs": "^2.6.1",
+    "file-type": "^12.0.0",
     "fs-extra": "^5.0.0",
     "jsonwebtoken": "^8.5.1",
     "koa": "^2.7.0",
@@ -48,8 +49,8 @@
     "pm2": "^2.10.4",
     "redis": "^2.8.0",
     "s3-upload-stream": "^1.0.7",
+    "sharp": "^0.22.1",
     "socket.io": "^2.2.0",
-    "superagent": "^3.8.3",
     "uuid": "^3.3.2"
   },
   "devDependencies": {

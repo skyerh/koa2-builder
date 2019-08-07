@@ -1,5 +1,4 @@
 const
-  _ = require('lodash'),
   rbacConfig = require('../config/rbac')
 
 class RBAC {
@@ -21,20 +20,20 @@ class RBAC {
    * @memberof RBAC
    */
   can(role, operation) {
-    if (_.isEmpty(this.roles[role]) === true) {
+    if (!this.roles[role]) {
       return false
     }
     
     let _role = this.roles[role]
-    if (_.includes(_role.can, operation) === true) {
+    if (_role.can.includes(operation) === true) {
       return true
     }
 
-    if (_.isEmpty(_role.inherits) === true || _role.inherits.length < 1) {
+    if (!_role.inherits || _role.inherits.length < 1) {
       return false
     }
 
-    return _.some(_role.inherits, (childRole) => {
+    return _role.inherits.some((childRole) => {
       return this.can(childRole, operation)
     })
   }
@@ -48,18 +47,18 @@ class RBAC {
    */
   operationGet(role) {
     
-    if (_.isEmpty(this.roles[role]) === true) {
+    if (!this.roles[role]) {
       return []
     }
 
     let _role = this.roles[role]
-    this.operationList = _.union(this.operationList, _role.can)
+    this.operationList = [...new Set([...this.operationList, ..._role.can])]
 
-    if (_.isEmpty(_role.inherits) === true || _role.inherits.length < 1) {
+    if (!_role.inherits || _role.inherits.length < 1) {
       return this.operationList
     }
 
-    _.map(_role.inherits, (childRole) => {
+    _role.inherits.forEach((childRole) => {
       this.operationGet(childRole)
     })
     return this.operationList

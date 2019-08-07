@@ -1,238 +1,247 @@
 const
-  _ = require('lodash'),
-  apiError = require('../error/apiError'),
+  ApiError = require('../error/apiError'),
   apiErrorNames = require('../error/apiErrorNames'),
   config = require('../config'),
   crypto = require('../utils/crypto'),
   email = require('../utils/email'),
+  rbacHelper = require('../utils/rbacHelper'),
   RedisInviteModel = require('../models/redisInviteModel'),
   redisInviteModel = new RedisInviteModel(),
+  RoleModel = require('../models/roleModel'),
+  roleModel = new RoleModel(),
   UserModel = require('../models/userModel'),
   userModel = new UserModel(),
   Validate = require('../utils/validate'),
   validate = new Validate()
 
 /**
- * 
- * @api {POST} /user/create Create a user
- * @apiDescription The client is need to obtain the invitation code before create an account.
- *  All the information that used to create the account differ to the data which are used to apply the invitation code will be rejected.
- *  For the invitation code applying please see the document "Send the invitation to the user"
- * @apiName userCreate
+ *
+ * @api {POST} /user/account/create Create an account
+ * @apiName accountCreate
  * @apiGroup User
- * @apiVersion  0.1.0
- * 
- * 
+ * @apiVersion  1.0.0
  * @apiPermission none
- * @apiParam  {String} email The user's email
- * @apiParam  {String} password The user's password
- * @apiParam  {String} name The user's name
- * @apiParam  {String[]} groups The groups are the dealer's compnay
- * @apiParam  {String[]} roles The roles are the identity of the dealer
- * 
- * @apiSuccess (200) {Number} code Error code
- * @apiSuccess (200) {String} message Success message
- * @apiSuccess (200) {Object} result Response result
- * 
- * 
- * @apiParamExample  {type} Request-Example:
-{
-  "password": "password",
-  "email": "skyer@email.com",
-  "name": "Skyer",
-  "groups": ["RD2"],
-  "roles": ["admin"],
-  "invitationCode": "5fa309807910364d1e0bf"
+ *
+ * @apiDescription Create a normal user by providing a name, email and password.
+ *  <p> After running the api, the server will send the verification mail
+ *  to the user and verify the email. </p>
+ *
+ * @apiParam  {String} name The name of the user
+ * @apiParam  {String} email The email is used as the login key. Please use the email which
+ *  you can access
+ * @apiParam  {String} password The password of the login password.
+ * @apiParam  {String} group Group to which the user belongs
+ *
+ * @apiUse COMMON_SUCCESS
+ * @apiUse COMMON_ERROR
+ *
+ * @apiError USER_EMAIL_VERIFIED {
+  code: -105,
+  message: 'user`s email has been registered and verified',
 }
- * 
- * 
- * @apiSuccessExample {type} Success-Response:
+ * @apiError USER_CREATE_ERROR {
+  code: -112,
+  message: 'there is an error on user creation',
+}
+ * @apiError EMAIL_SEND_FAIL {
+  code: -601,
+  message: 'fail to send email',
+}
+ * @apiError GROUP_NOT_FOUND {
+  code: -302,
+  message: 'cannot find the group',
+}
+ * @apiError ROLE_NO_DEFAULT {
+  code: -405,
+  message: 'There is no default role found, default role not set',
+}
+ *
+ *
+ * @apiParamExample  Request-Example:
+{
+  "password": "1231234",
+  "email": "crow@mailinator.com",
+  "name":"Crow"
+}
+ *
+ *
+ * @apiSuccessExample Success-Response （example):
 {
     "code": 0,
     "message": "success",
     "result": {
-        "emailVerified": true,
-        "roles": [
-            "admin"
-        ],
-        "groups": [
-            "RD2"
-        ],
-        "email": "skyer@email.com",
-        "name": "Skyer",
-        "user_id": "bca3cc84-6895-48c9-ba2b-a78ee4385a16",
-        "createdAt": "2018-07-06T09:33:19.628Z",
-        "updatedAt": "2018-07-06T09:33:19.628Z"
+        "mobileVerified": false,
+        "emailVerified": false,
+        "email": "crow@mailinator.com",
+        "name": "Crow",
+        "user_id": "efa4cbf7-f890-4b78-a42d-17130ae9cd49",
+        "roles": {
+            "user": [
+                "user"
+            ]
+        },
+        "createdAt": "2019-05-27T09:24:29.796Z",
+        "updatedAt": "2019-05-27T09:24:29.796Z"
     }
 }
- * 
- * 
+ *
  */
-exports.userCreate = async (ctx) => {
+exports.accountCreate = async (ctx) => {
   const jsonSchema = {
     properties: {
+      avatar: { type: 'string' },
       user_id: { type: 'string' },
       email: { type: 'string' },
       password: { type: 'string' },
       name: { type: 'string' },
-      groups: {
-        type: 'array',
-        minItems: 1,
-        maxItems: 1,
-        items: {
-          type: 'string'
-        }
-      },
-      roles: {
-        type: 'array',
-        minItems: 1,
-        maxItems: 1,
-        items: {
-          type: 'string'
-        }
-      },
-      invitationCode: { type: 'string' }
+      group: { type: 'string' },
+      roleName: { type: 'string' },
+      verificationCode: { type: 'string' },
     },
-    dependencies: {
-      mobile: {required: ['countryCode']}
-    },
-    required: ['name', 'password', 'groups', 'roles', 'email', 'invitationCode'],
+    required: ['name', 'email', 'password', 'group'],
   }
 
-  const data = _.clone(ctx.request.body)
-  data.user_id = crypto.uuid()
-  data.password = await crypto.bcrypt(data.password, config.server.saltRounds)
+  const data = { ...ctx.request.body }
+  data.verificationCode = crypto.randomString(config.email.invitation.codeLength)
   validate.validate(jsonSchema, data)
 
-  const invitation = await redisInviteModel.invitetionGet(data)
-  let userCount
-  if (_.isEmpty(invitation) === true) {
-    userCount = await userModel.userCount()
-    if (userCount !== 0) {
-      throw new apiError(apiErrorNames.INVITATION_CODE_FAIL)
-    } else {
-      data.groups = ['RD2']
-      data.roles = ['root']
+  const defaultRoleObj = await roleModel.roleDefaultGet(data)
+  if (!defaultRoleObj) {
+    throw new ApiError(apiErrorNames.GROUP_NOT_FOUND)
+  }
+  if (!defaultRoleObj.roleName) {
+    throw new ApiError(apiErrorNames.ROLE_NO_DEFAULT)
+  }
+  const user = await userModel.userGetByEmail(data)
+  data.password = await crypto.bcrypt(data.password, config.server.saltRounds)
+
+  if (user && user.emailVerified === true) {
+    throw new ApiError(apiErrorNames.USER_EMAIL_VERIFIED)
+  } else if (user && user.emailVerified === false) {
+    data.user_id = user.user_id
+    data.roles = { [`${data.group}`]: [`${defaultRoleObj.roleName}`] }
+    const ejsData = {
+      email: data.email,
+      verification: data.verificationCode,
     }
+    try {
+      await Promise.all([
+        redisInviteModel.verifyEmailCreate(data),
+        email.verifyEmailSend(ejsData),
+      ])
+    } catch (err) {
+      throw new ApiError(apiErrorNames.EMAIL_SEND_FAIL, err)
+    }
+    const aUser = JSON.parse(JSON.stringify(user))
+    delete aUser.password
+    delete aUser._id
+    delete aUser.__v
+    ctx.body = aUser
   } else {
-    if (_.difference(invitation.roles, data.roles).length !== 0 ||
-      _.difference(invitation.groups, data.groups).length !== 0) {
-      throw new apiError(apiErrorNames.INVITATION_DATA_FAIL)
+    data.user_id = crypto.uuid()
+    data.roles = { [`${data.group}`]: [`${defaultRoleObj.roleName}`] }
+    let aUser
+    const ejsData = {
+      email: data.email,
+      verification: data.verificationCode,
     }
-  }
-
-  let user = {}
-  if (!invitation || !invitation.email || invitation.email !== data.email) {
-    if (userCount !== 0) {
-      throw new apiError(apiErrorNames.INVITATION_DATA_FAIL)
+    try {
+      aUser = await Promise.all([
+        userModel.userCreate(data),
+        redisInviteModel.verifyEmailCreate(data),
+        email.verifyEmailSend(ejsData),
+      ])
+    } catch (err) {
+      throw new ApiError(apiErrorNames.EMAIL_SEND_FAIL, err)
     }
+    aUser[0] = JSON.parse(JSON.stringify(aUser[0]))
+    delete aUser[0].password
+    delete aUser[0]._id
+    delete aUser[0].__v
+    ctx.body = aUser[0]
   }
-
-  user = await userModel.userGetByEmail(data)
-  if (user && user.emailVerified) {
-    throw new apiError(apiErrorNames.USER_EMAIL_VERIFIED)
-  } else if (_.isEmpty(user) === true) {
-    data.emailVerified = true
-    user = await userModel.userCreate(data)
-    user = JSON.parse(JSON.stringify(user))
-    delete user.password
-    delete user._id
-    delete user.__v
-  }
-  ctx.body = user
 }
 
 /**
- * 
- * @api {POST} /api/user/invite Send the invitation to the user
- * @apiDescription Send the inviation link through the email to the client.
- *  The client can do the registration in iMedi Serial Number Server with the link we send.
- *  For example, the link is looked like this http://localhost:23088/signup/297befbba516a5d01f014
- * @apiName userInvite
- * @apiGroup User
- * @apiVersion  0.1.0
- * 
- * @apiPermission JWT + admin
- * @apiParam  {String} email The user's email
- * @apiParam  {String[]} roles The roles are the identity of the user
  *
- * @apiSuccess (200) {Number} code Error code
- * @apiSuccess (200) {String} message Success message
- * @apiSuccess (200) {Object} result Response result
- * 
- * @apiParamExample  {type} Email-Example:
-{
-	"email": "skyer@email.com",
-	"groups": "RD2",
-	"roles": "admin"
+ * @api {GET} /user/get?user_id=xxxxx Get user information
+ * @apiName userGet
+ * @apiGroup User
+ * @apiVersion  0.2.0
+ * @apiPermission user
+ *
+ * @apiDescription It will return user information
+ *
+ * @apiParam  {String} [user_id] User id
+ *
+ * @apiUse COMMON_SUCCESS
+ * @apiUse COMMON_ERROR
+ *
+ * @apiError NOT_FOUND {
+  code: -4,
+  message: 'data is not found',
 }
- * 
- * 
- * @apiSuccessExample {type} Success-Response:
+ *
+ *
+ * @apiParamExample Request-Example:
+ {{hostname}}/api/user/get
+ *
+ *
+ * @apiSuccessExample Success-Response:
 {
     "code": 0,
     "message": "success",
-    "result": "297befbba516a5d01f014"
-}
-//And the invitation link in email or mobile is look like this 
-//http://localhost:3000/signup/297befbba516a5d01f014
- * 
- * 
- */
-exports.userInvite = async (ctx) => {
-  const jsonSchema = {
-    properties: {
-      user_id: { type: 'string' },
-      email: { type: 'string' },
-      invitationCode: { type: 'string' },
-      groups: {
-        type: 'array',
-        minItems: 1,
-        maxItems: 1,
-        items: {
-          type: 'string'
-        }
-      },
-      roles: {
-        type: 'array',
-        minItems: 1,
-        maxItems: 1,
-        items: {
-          type: 'string'
-        }
-      },
-    },
-    dependencies: {
-      mobile: {required: ['countryCode']}
-    },
-    required: ['user_id', 'invitationCode', 'groups', 'roles', 'email']
-  }
-
-  const data = _.clone(ctx.request.body)
-  data.user_id = ctx.state.user.user_id
-  data.invitationCode = crypto.randomString(config.invitation.codeLength)
-  validate.validate(jsonSchema, data)
-  data.groupName = data.groups[0]
-  data.roleName = data.roles[0]
-  
-
-  const isVerified = await userModel.isUserVerified(data)
-  if (isVerified.emailVerified === true) {
-    throw new apiError(apiErrorNames.USER_EMAIL_VERIFIED)
-  }
-
-  await redisInviteModel.invitationCreate(data)
-  try {
-    const ejsData = {
-      email: data.email,
-      url: `${config.server.protocol}://${ctx.request.header.host}/signup/${data.invitationCode}`,
-      invitationCode: data.invitationCode
+    "result": {
+        "updatedAt": "2017-12-28T08:42:30.620Z",
+        "createdAt": "2017-12-28T08:42:30.620Z",
+        "email": "giraffe@mailinator.com",
+        "name": "Giraffe",
+        "user_id": "07c720ad-8ec5-4546-8d7e-3f9946344b3b",
+        "groups": [
+            "TEST"
+        ],
+        "roles": [
+            "doctor"
+        ],
+        "emailVerified": true,
+        "mobileVerified": false,
+        "api": [
+            "/api/file/link",
+            "/api/file/download",
+            "/api/file/mark/set",
+            "/api/file/mark/:file_id",
+            "/api/examination/:examination_id",
+            "/api/examination/create",
+            "/api/examination/examinadd",
+            "/api/examination/history/set",
+            "/api/examination/list",
+            "/api/barcode/tag/:group",
+            "/api/barcode/list/:group",
+            "/api/barcode/create",
+            "/api/file/sync",
+            "/api/user/get",
+            "/api/user/isVerified",
+            "/api/user/update"
+        ]
     }
-    await email.invitationSend(ejsData)
-  } catch (err) {
-    throw new apiError(apiErrorNames.EMAIL_SEND_FAIL, err)
+}
+ *
+ *
+ */
+exports.userGet = async (ctx) => {
+  const data = { ...ctx.request.query }
+  data.user_id = ctx.state.user.user_id
+  data.group = ctx.state.user.group
+  if (ctx.request.query.user_id) {
+    data.staff_id = ctx.request.query.user_id
+  } else {
+    data.staff_id = data.user_id
   }
 
-  ctx.body = data.invitationCode
+  const user = await userModel.userGetByStaffId(data)
+  if (!user) {
+    throw new ApiError(apiErrorNames.NOT_FOUND)
+  }
+  user.api = rbacHelper.operationGet(user.roles[data.group][0])
+  ctx.body = user
 }
-

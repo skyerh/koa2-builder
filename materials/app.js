@@ -1,6 +1,4 @@
 const
-  apiError = require('./error/apiError'),
-  apiErrorNames = require('./error/apiErrorNames'),
   bodyparser = require('koa-bodyparser'),
   cors = require('koa2-cors'),
   helmet = require('koa-helmet'),
@@ -9,6 +7,7 @@ const
   morgan = require('koa-morgan'),
   moment = require('moment'),
   onerror = require('koa-onerror'),
+  path = require('path'),
   views = require('koa-views')  
 
 /**
@@ -46,8 +45,8 @@ app.use(json())
 app.use(morgan(':req[user_id] on [:date[iso]] :method :url :status :response-time ms = :res[content-length]'))
 app.use(require('koa-static')(__dirname + '/public'))
 
-app.use(views(__dirname + '/views', {
-  extension: 'ejs'
+app.use(views(path.join(__dirname, '/views'), {
+  extension: 'ejs',
 }))
 
 /**
@@ -72,36 +71,12 @@ app.use(async (ctx, next) => {
 app.use(responseFormatter())
 
 /**
- * set the url path weight
- */
-//app.use(weight())
-
-/**
  * put jwt protected ctx.state.user.user_id to header for morgan
  */
 app.use(async (ctx, next) => {
   await next()
   if (ctx.state.user && ctx.state.user.user_id) {
     ctx.header.user_id = ctx.state.user.user_id
-  }
-})
-
-/**
- * jwt protected
- */
-app.use(async (ctx, next) => {
-  try {
-    return await next()
-  } catch (error) {
-    if (error.status === 401) {
-      if (ctx.request.header.authorization) {
-        throw new apiError(apiErrorNames.USER_AUTH_NEEDED, `with ${ctx.request.header.authorization}`)
-      } else {
-        throw new apiError(apiErrorNames.USER_AUTH_NEEDED)
-      }
-    } else {
-      throw error
-    }
   }
 })
 

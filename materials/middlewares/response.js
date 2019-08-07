@@ -1,6 +1,5 @@
 const
-  _ = require('lodash'),
-  apiError = require('../error/apiError.js'),
+  ApiError = require('../error/apiError.js'),
   apiErrorNames = require('../error/apiErrorNames.js')
 
 /**
@@ -9,7 +8,7 @@ const
  */
 var responseFormatter = async function (ctx) {
   if (ctx.body && ctx.response.status === 200) {
-    if (_.includes(ctx.originalUrl, '/api/') === true) {
+    if (ctx.originalUrl.includes('/api/') === true) {
       ctx.body = {
         code: 0,
         message: 'success',
@@ -17,7 +16,7 @@ var responseFormatter = async function (ctx) {
       }
     }
   } else if (ctx.response.status === 404) {
-    let error = new apiError(apiErrorNames.UNKNOWN_API)
+    let error = new ApiError(apiErrorNames.UNKNOWN_API)
     ctx.response.status = 400
     ctx.body = {
       code: error.code,
@@ -25,14 +24,14 @@ var responseFormatter = async function (ctx) {
       message: error.message
     }
   } else if (ctx.response.status === 204) {
-    let error = new apiError(apiErrorNames.NOT_FOUND)
+    let error = new ApiError(apiErrorNames.NOT_FOUND)
     ctx.body = {
       code: error.code,
       errorName: error.errorName,
       message: error.message
     }
   } else if (ctx.response.status !== 200) {
-    let error = new apiError(apiErrorNames.UNKNOWN_ERROR)
+    let error = new ApiError(apiErrorNames.UNKNOWN_ERROR)
     ctx.body = {
       code: error.code,
       errorName: error.errorName,

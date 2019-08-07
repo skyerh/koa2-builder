@@ -1,20 +1,19 @@
 const
-  config = require('../config'),
   ejs = require('ejs'),
-  email = {},
-  nodemailer = require('nodemailer')
+  nodemailer = require('nodemailer'),
+  config = require('../config/index'),
+  email = {}
 
 const transporter = nodemailer.createTransport({
   host: config.email.host,
   port: config.email.port,
   secure: config.email.secure,
-  auth: config.email.auth
+  auth: config.email.auth,
 })
 
-/*
-let readEmailTemplateFile = async () => {
-  return new Promise ((resolve, reject) => {
-    fs.readFile(__dirname + '/../views/email.ejs', 'utf8', (err, content) => {
+const renderResetPwdTemplateFile = (ejsData) => {
+  return new Promise((resolve, reject) => {
+    ejs.renderFile(`${__dirname}/../views/resetPwd.ejs`, ejsData, (err, content) => {
       if (!err && content) {
         resolve(content)
       } else {
@@ -23,11 +22,10 @@ let readEmailTemplateFile = async () => {
     })
   })
 }
-*/
 
-let renderInvitationTemplateFile = (ejsData) => {
-  return new Promise ((resolve, reject) => {
-    ejs.renderFile(__dirname + '/../views/invitation.ejs', ejsData, (err, content) => {
+const renderVerifyEmailTemplateFile = (ejsData) => {
+  return new Promise((resolve, reject) => {
+    ejs.renderFile(`${__dirname}/../views/verification.ejs`, ejsData, (err, content) => {
       if (!err && content) {
         resolve(content)
       } else {
@@ -38,7 +36,7 @@ let renderInvitationTemplateFile = (ejsData) => {
 }
 
 email.verify = async () => {
-  return new Promise ((resolve, reject) => {
+  return new Promise((resolve, reject) => {
     transporter.verify((err, success) => {
       if (err) {
         reject(err)
@@ -49,22 +47,37 @@ email.verify = async () => {
   })
 }
 
-let mailOptions = (email, htmlContent) => {
+const mailOptions = (theEmail, subject, htmlContent) => {
   return {
-    from: `${config.email.auth.user}@email.com`,
-    to: email,
-    subject: 'Cloud Account Invitation',
-    text: 'example',
-    html: htmlContent
+    subject,
+    from: `${config.email.auth.user}@your-email.com`,
+    to: theEmail,
+    text: 'koa2-builder',
+    html: htmlContent,
   }
 }
 
-email.invitationSend = async (ejsData) => {
-  let htmlContent = await renderInvitationTemplateFile(ejsData)
-  process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"
-  return new Promise ((resolve, reject) => {
-      
-    transporter.sendMail(mailOptions(ejsData.email, htmlContent), (err, info) => {
+email.resetPwdSend = async (ejsData) => {
+  const htmlContent = await renderResetPwdTemplateFile(ejsData)
+  const subject = 'Password Reset'
+  process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
+  return new Promise((resolve, reject) => {
+    transporter.sendMail(mailOptions(ejsData.email, subject, htmlContent), (err, info) => {
+      if (err) {
+        reject(err)
+      } else {
+        resolve(info)
+      }
+    })
+  })
+}
+
+email.verifyEmailSend = async (ejsData) => {
+  const htmlContent = await renderVerifyEmailTemplateFile(ejsData)
+  const subject = 'Email Verification'
+  process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
+  return new Promise((resolve, reject) => {
+    transporter.sendMail(mailOptions(ejsData.email, subject, htmlContent), (err, info) => {
       if (err) {
         reject(err)
       } else {
