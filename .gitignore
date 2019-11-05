@@ -27,18 +27,19 @@ coverage
 bower_components
 
 # node-waf configuration
-.lock-wscript
+.lock-wscript
 
-# Compiled binary addons (https://nodejs.org/api/addons.html)
+# Compiled binary addons (https://nodejs.org/api/addons.html)
 build/Release
 
 # Dependency directories
 node_modules/
+node_modules/commander/
 jspm_packages/
 materials/node_modules
 
 # TypeScript v1 declaration files
-typings/
+typingss
 
 # Optional npm cache directory
 .npm
@@ -60,6 +61,3 @@ typings/
 
 # next.js build output
 .next
-node_modules/commander/CHANGELOG.md
-node_modules/commander/typings/index.d.ts
-node_modules/commander/CHANGELOG.md
