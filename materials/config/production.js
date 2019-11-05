@@ -2,26 +2,42 @@
  * production environment config setting
  */
 module.exports = {
+  cache: {
+    token: {
+      expired: 60 * 60 * 24 * 30,
+    },
+    avatar: {
+      expired: 60 * 60 * 24 * 30,
+    },
+  },
   email: {
     service: 'exchange',
-    host: 'host.email.com',
+    host: 'mail.imediplus.com',
     port: 587,
     secure: false,
     auth: {
-      user: 'skyer',
-      pass: '123123'
-    }
-  },
-  invitation: {
-    expired: 60 * 60 * 24 * 7,
-    codeLength: 21
+      user: 'cloud',
+      pass: '281135955',
+    },
+    invitation: {
+      expired: 60 * 60 * 24 * 7,
+      codeLength: 6,
+    },
+    resetPwd: {
+      expired: 60 * 60 * 1,
+      codeLength: 21,
+    },
+    tempPwd: {
+      expired: 60 * 10,
+      codeLength: 8,
+    },
   },
   mongo: {
-    mongodb_url: "mongodb://localhost:27017/example"
+    mongodb_url: 'mongodb://localhost:27017/example',
   },
   redis: {
     redisPort: 6379,
-    redisUrl: 'localhost'
+    redisUrl: 'localhost',
   },
   s3: {
     accessKeyId: 'your-s3-accessKeyId',
@@ -36,11 +52,11 @@ module.exports = {
     env: 'production',
     fileUploadDestination: 'uploads/',
     iv: 'cjd92hjfd7s66sky',
-    JWTSecretKey : 'tl2QO8RKES1P5cWbOwbp8hMWB50HfphX',
-    port: '6688',
+    JWTSecretKey: 'tl2QO8RKES1P5cWbOwbp8hMWB50HfphX',
+    port: '6188',
     protocol: 'https',
     saltRounds: 11,
-    secret: 'jewelkegsuwhd823jd8dcnal1hn66sky'
+    secret: 'jewelkegsuwhd823jd8dcnal1hn66sky',
   },
   worker: {
     arena: {
@@ -50,7 +66,7 @@ module.exports = {
         type: 'bee',
       }],
       address: {
-        port: '3099',
+        port: '3299',
         host: '127.0.0.1',
         basePath: '/arena',
         disableListen: false,

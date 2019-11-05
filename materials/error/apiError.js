@@ -6,7 +6,7 @@ const apiErrorNames = require('./apiErrorNames.js')
 class ApiError extends Error {
   constructor(errorName, errorMessage) {
     super()
-    var errorInfo = apiErrorNames.getErrorInfo(errorName)
+    const errorInfo = apiErrorNames.getErrorInfo(errorName)
     this.errorName = errorName
     this.code = errorInfo.code
     if (errorMessage) {

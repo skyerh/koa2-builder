@@ -4,21 +4,21 @@
 module.exports = {
   root: {
     can: [],
-    inherits: ['admin']
+    inherits: ['admin'],
   },
   admin: {
     can: [
       '/api/user/get',
       '/api/user/list',
       '/api/user/invite',
-      '/api/user/isVerified'
+      '/api/user/isVerified',
     ],
-    inherits: ['dealer']
+    inherits: ['dealer'],
   },
   user: {
     can: [
       '/api/user/get',
-      '/api/user/update'
-    ]
-  }
+      '/api/user/update',
+    ],
+  },
 }

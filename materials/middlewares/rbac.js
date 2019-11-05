@@ -6,38 +6,38 @@
  * router.get('/tag/:group', jwt, rbac('/api/barcode/tag/:group'), barcodeController.barcodeTagList)
  */
 const
-  _ = require('lodash'),
-  apiError = require('../error/apiError'),
+  ApiError = require('../error/apiError'),
   apiErrorNames = require('../error/apiErrorNames'),
   RBACModel = require('../models/rbacModel'),
   rbacModel = new RBACModel(),
-  rbacObj = {},
-  UserModel = require('../models/userModel'),
-  userModel = new UserModel()
+  rbacObj = {}
 
 rbacObj.check = (operation) => {
   return async (ctx, next) => {
-    let userRoles = await userModel.userRolesList({user_id: ctx.state.user.user_id})
-    
-    if (_.isEmpty(userRoles) === true) {
-      throw new apiError(apiErrorNames.USER_ROLE_NOT_FOUND)
-    } else {
-      userRoles = userRoles.roles
+    let op = operation
+    const { roles } = ctx.state.user
+
+    try {
+      if (!roles) {
+        throw new Error('either the user is not found, or the user role is missing')
+      }
+
+      if (!op) {
+        op = ctx.request.path
+      }
+
+      const result = roles.some((role) => {
+        return rbacModel.can(role, op)
+      })
+
+      if (result === false) {
+        throw new Error('the role is restricted to run the api')
+      }
+
+      await next()
+    } catch (err) {
+      throw new ApiError(apiErrorNames.ROLE_CHECK_ERROR, err)
     }
-
-    if (_.isEmpty(operation) === true) {
-      operation = ctx.request.path
-    }
-
-    let result = _.some(userRoles, (role) => {
-      return rbacModel.can(role, operation)
-    })
-
-    if (result === false) {
-      throw new apiError(apiErrorNames.ROLE_RESTRICTED)
-    }
-
-    await next()
   }
 }
 

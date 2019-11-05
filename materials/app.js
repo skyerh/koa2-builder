@@ -8,23 +8,23 @@ const
   moment = require('moment'),
   onerror = require('koa-onerror'),
   path = require('path'),
-  views = require('koa-views')  
+  views = require('koa-views')
 
 /**
- * customized defined 
+ * customized defined
  */
 const
   index = require('./routes/index'),
-  logUtil = require('./utils/log_util'),
+  log = require('./middlewares/log'),
   responseFormatter = require('./middlewares/response')
 
-/** 
+/**
  * MongoDB connected
  */
 require('./models/dbModel').mongoConnect()
 
 /**
- * create Koa web application 
+ * create Koa web application
  */
 const app = new Koa()
 
@@ -39,11 +39,11 @@ onerror(app)
 app.use(cors())
 app.use(helmet())
 app.use(bodyparser({
-  enableTypes:['json', 'form', 'text']
+  enableTypes: ['json', 'form', 'text'],
 }))
 app.use(json())
 app.use(morgan(':req[user_id] on [:date[iso]] :method :url :status :response-time ms = :res[content-length]'))
-app.use(require('koa-static')(__dirname + '/public'))
+app.use(require('koa-static')(path.join(__dirname, '/public')))
 
 app.use(views(path.join(__dirname, '/views'), {
   extension: 'ejs',
@@ -58,10 +58,10 @@ app.use(async (ctx, next) => {
   try {
     await next()
     ms = moment() - start
-    logUtil.logResponse(ctx, ms)
+    log.logResponse(ctx, ms)
   } catch (error) {
     ms = moment() - start
-    logUtil.logError(ctx, error, ms)
+    log.logError(ctx, error, ms)
   }
 })
 

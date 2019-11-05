@@ -29,9 +29,9 @@
   code: -7,
   message: 'need to re-log-in due to the authentication has been renew',
 }
- * @apiError ROLE_RESTRICTED {
-  code: -403,
-  message: 'the role is restricted to run the api',
+ * @apiError ROLE_CHECK_ERROR {
+  code: -401,
+  message: 'role check failed',
 }
  *
  * @apiErrorExample  Response (example):
