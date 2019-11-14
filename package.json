@@ -13,6 +13,7 @@
     "url": "git+https://github.com/skyerh/koa2-builder.git"
   },
   "keywords": [
+    "koa",
     "koa2",
     "generator",
     "builder",

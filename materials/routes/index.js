@@ -5,7 +5,7 @@ const
 
 router.get('/', async (ctx) => {
   await ctx.render('index.ejs', {
-    title: 'koa2 builder'
+    title: 'koa2 builder',
   })
 })
 

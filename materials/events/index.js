@@ -1,16 +1,16 @@
-var
-  serverEvent = require('./server'),
-  socketIoEvent = require('./socketIo')
+const
+  serverEvents = require('./server'),
+  socketIoEvents = require('./socketIo')
 
 /**
- * export selecting environment config
- * default is development
+ *  export selected event
+ *
  */
 module.exports = {
-  serverEvent: (server, port) => {
-    serverEvent(server, port)
+  serverEvents: (server, port) => {
+    serverEvents(server, port)
   },
-  socketIoEvent: (io) => {
-    socketIoEvent(io)
-  }
+  socketIoEvents: (io) => {
+    socketIoEvents(io)
+  },
 }
