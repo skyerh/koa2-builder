@@ -34,17 +34,18 @@ const port = normalizePort(config.server.port || '3000')
 const server = http.createServer(app.callback())
 
 /**
+ * Listen on provided port, on all network interfaces.
+ */
+server.listen(port, '0.0.0.0')
+setEvents.serverEvents(server, port)
+
+
+/**
  * setup Socket.IO
  */
 const io = require('socket.io')(server)
 
-setEvents.socketIoEvent(io)
-
-/**
- * Listen on provided port, on all network interfaces.
- */
-server.listen(port, '0.0.0.0')
-setEvents.serverEvent(server, port)
+setEvents.socketIoEvents(io)
 
 try {
   Arena({
