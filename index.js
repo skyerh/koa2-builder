@@ -1,11 +1,12 @@
 const
   path = require('path'),
   program = require('commander'),
-  ncp = require('ncp').ncp
+  ncp = require('ncp').ncp,
+  version = require('./materials/package.json').version
 
 const builder = () => {
   program
-    .version('1.0.5')
+    .version(version)
     .allowUnknownOption()
     .usage('<dirName>')
     .arguments('<dirName>')
