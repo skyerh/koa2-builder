@@ -19,7 +19,7 @@
     "worker": "NODE_ENV=production pm2 start bin/worker.js"
   },
   "dependencies": {
-    "ajv": "^5.5.2",
+    "ajv": "^6.12.3",
     "aws-sdk": "^2.475.0",
     "bcryptjs": "^2.4.3",
     "bee-queue": "^1.2.2",
